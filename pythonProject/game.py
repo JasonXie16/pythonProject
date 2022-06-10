@@ -23,8 +23,7 @@ points = [(100,100),(200,100),(200,0)]
 rect = (100,100,200,200)
 grey = (216,218,227)
 
-speed_enemy1 = 2
-speed_enemy2 = 2
+
 timer = 60
 enemyMaxY = 1000
 fps = 60
@@ -91,8 +90,6 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.center = (startposx, 0)
         self.direction = direction
         self.speed = speed
-    def killed(self):
-        self.kill()
     def move(self):
         if self.direction == "right":
             self.rect.move_ip(self.speed,0)
@@ -249,24 +246,22 @@ class Bomb(pygame.sprite.Sprite):
                 sys.exit()
 
 
-
-enemy1 = Enemy(random.randint(0,1000),10,"right")
-enemy2 = Enemy(random.randint(0,1000),5,"left")
 shots = pygame.sprite.Group()
 bomb = pygame.sprite.Group()
-player1 = player1()
 enemies = pygame.sprite.Group()
-all_sprites  = pygame.sprite.Group()
+all_sprites = pygame.sprite.Group()
+
+enemy1 = Enemy(random.randint(0,1000),2,"right")
+enemy2 = Enemy(random.randint(0,1000),1,"left")
+player1 = player1()
 enemies.add(enemy1)
 enemies.add(enemy2)
-all = pygame.sprite.RenderUpdates()
+allupdate = pygame.sprite.RenderUpdates()
 all_sprites.add(player1)
 all_sprites.add(enemy1)
 all_sprites.add(enemy2)
-Shot.containers = shots, all
-Bomb.containers = bomb, all
-INC_SPEED = pygame.USEREVENT + 1
-pygame.time.set_timer(INC_SPEED, 1000)
+Shot.containers = shots, allupdate
+Bomb.containers = bomb, allupdate
 clock = pygame.time.Clock()
 pygame.time.set_timer(pygame.USEREVENT, 1000)
 font = pygame.font.SysFont('Consolas', 30)
@@ -285,12 +280,9 @@ while run:
     surface.blit(font2.render("Ammo: " + str(maxshots - len(shots)), True, orange), (850, 100))
     pygame.display.flip()
     clock.tick(60)
-    all.clear(surface, background)
-    all.update()
+    allupdate.clear(surface, background)
+    allupdate.update()
     for e in pygame.event.get():
-        if e.type == INC_SPEED:
-            speed_enemy1 += 1
-            speed_enemy2 += 1
         if e.type == pygame.USEREVENT:
             counter -= 1
             text = str(counter).rjust(3) if counter > 0 else pygame.quit()
@@ -315,6 +307,7 @@ while run:
         if pygame.sprite.spritecollideany(allenemy,shots):
             points += 1
             allenemy.kill()
+            print(enemies)
 
 
 
@@ -341,6 +334,6 @@ while run:
         Bomb.update(Bomb())
 
         #pygame.mixer.Sound('gamematerial/bombthrow3.wav').play()
-    dirty = all.draw(surface)
+    dirty = allupdate.draw(surface)
     pygame.display.update(dirty)
     framePerSecond.tick(fps)
