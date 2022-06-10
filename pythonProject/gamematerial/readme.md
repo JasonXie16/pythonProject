@@ -11,7 +11,8 @@ Pygames uses rectangular coordinates to store them
 
 
 ## movement
-If you want to position the sprite you use
+If you want to position the sprite you have to use rectangular coordinates.  
+
 ## Group
 Groups are used to sort sprites
 > group(sprites)
@@ -125,12 +126,3 @@ Special ones are just the start_pos and end_pos wich each has one list/tuple wit
 
 
 
-## music/sound
-## hitbox/colide
-## text
-## make images disapear
-## frames per second
-## update screen
-## make background
-## change size of window
-## detect key presses
