@@ -84,34 +84,46 @@ def playerdeath():
 class Enemy(pygame.sprite.Sprite):
 
     def __init__(self,startposx,speed,direction):
-        super().__init__()
-        self.image = pygame.image.load("gamematerial/enemyrobotbee.png")
+        pygame.sprite.Sprite.__init__(self, self.containers)
+        self.image = self.images[0]
         self.rect = self.image.get_rect()
         self.rect.center = (startposx, 0)
         self.direction = direction
         self.speed = speed
-    def move(self):
+    def update(self):
         if self.direction == "right":
-            self.rect.move_ip(self.speed,0)
+            self.rect.move_ip(self.speed, 0)
             if self.rect.right >= SCREEN_WIDTH:
                 self.rect.move_ip(0, self.speed + 50)
                 if (self.rect.bottom > enemyMaxY):
                     self.rect.top = 0
-                    self.rect.center = (random.randint(0,1000), 0)
+                    self.rect.center = (random.randint(0, 1000), 0)
                 self.direction = "left"
         else:
-            self.rect.move_ip(self.speed * -1,0)
+            self.rect.move_ip(self.speed * -1, 0)
             if self.rect.left <= 0:
                 self.rect.move_ip(0, self.speed + 50)
                 if (self.rect.bottom > enemyMaxY):
                     self.rect.top = 0
-                    self.rect.center = (random.randint(0,1000), 0)
+                    self.rect.center = (random.randint(0, 1000), 0)
                 self.direction = "right"
+    def bombpos(self):
+        pos = self.rect.center
+        return pos
 
 
 
-    def draw(self, surface):
-        surface.blit(self.image, self.rect)
+class Explosion(pygame.sprite.Sprite):
+    def __init__(self, actor):
+        pygame.sprite.Sprite.__init__(self, self.containers)
+        self.image = self.images[0]
+        self.rect = self.image.get_rect(center=actor.rect.center)
+        self.life = 12
+
+    def update(self):
+        self.life = self.life - 1
+        if self.life <= 0:
+            self.kill()
 
 class player1(pygame.sprite.Sprite):
     def __init__(self):
@@ -167,7 +179,9 @@ class Shot(pygame.sprite.Sprite):
 
     speed = -2
     images = []
-    def __init__(self,pos):
+    def __init__(self,pos,mode):
+        if not mode == 0:
+            self.mode = mode
         pygame.sprite.Sprite.__init__(self, self.containers)
         self.image = self.images[0]
         self.rect = self.image.get_rect(midbottom=pos)
@@ -181,30 +195,70 @@ class Shot(pygame.sprite.Sprite):
         self.image = self.images[0]
         self.rect = self.image.get_rect(midbottom=pos)
     def update(self):
-        self.rect.move_ip(0, self.speed)
-        if self.rect.top <= -10:
-            self.kill()
-        self.rect.move_ip(0, self.speed)
-        if self.rect.top <= -10:
-            self.kill()
-        self.rect.move_ip(0, self.speed)
-        if self.rect.top <= -10:
-            self.kill()
-        self.rect.move_ip(0, self.speed)
-        if self.rect.top <= -10:
-            self.kill()
-        self.rect.move_ip(0, self.speed)
+        if self.mode == 1:
+            self.rect.move_ip(0, self.speed)
+            if self.rect.top <= -10:
+                self.kill()
+            self.rect.move_ip(0, self.speed)
+            if self.rect.top <= -10:
+                self.kill()
+            self.rect.move_ip(0, self.speed)
+            if self.rect.top <= -10:
+                self.kill()
+            self.rect.move_ip(0, self.speed)
+            if self.rect.top <= -10:
+                self.kill()
+            self.rect.move_ip(0, self.speed)
+        if self.mode == 2:
+            self.rect.move_ip(self.speed, self.speed)
+            if self.rect.top <= 500:
+                self.kill()
+            self.rect.move_ip(self.speed, self.speed)
+            if self.rect.top <= 500:
+                self.kill()
+            self.rect.move_ip(self.speed, self.speed)
+            if self.rect.top <= 500:
+                self.kill()
+            self.rect.move_ip(self.speed, self.speed)
+            if self.rect.top <= 500:
+                self.kill()
+            self.rect.move_ip(self.speed * -1, self.speed)
+        if self.mode == 3:
+            self.rect.move_ip(0, self.speed)
+            if self.rect.top <= 500:
+                self.kill()
+            self.rect.move_ip(0, self.speed)
+            if self.rect.top <= 500:
+                self.kill()
+            self.rect.move_ip(0, self.speed)
+            if self.rect.top <= 500:
+                self.kill()
+            self.rect.move_ip(0, self.speed)
+            if self.rect.top <= 500:
+                self.kill()
+        if self.mode == 4:
+            self.rect.move_ip(self.speed * -1, self.speed)
+            if self.rect.top <= 500:
+                self.kill()
+            self.rect.move_ip(self.speed * -1, self.speed)
+            if self.rect.top <= 500:
+                self.kill()
+            self.rect.move_ip(self.speed * -1, self.speed)
+            if self.rect.top <= 500:
+                self.kill()
+            self.rect.move_ip(self.speed * -1, self.speed)
+            if self.rect.top <= 500:
+                self.kill()
+            self.rect.move_ip(self.speed * -1, self.speed)
 
 class Bomb(pygame.sprite.Sprite):
     speedbomb = 5
     images = []
-    def __init__(self):
+    def __init__(self,alien):
         pygame.sprite.Sprite.__init__(self, self.containers)
         self.image = self.images[0]
-        if random.randint(0,1) == 1:
-            self.rect = self.image.get_rect(midbottom=enemy1.rect.move(0, 5).midbottom)
-        else:
-            self.rect = self.image.get_rect(midbottom=enemy2.rect.move(0, 5).midbottom)
+        self.rect = self.image.get_rect(midbottom=alien.rect.move(0, 5).midbottom)
+
 
     def update(self):
         self.rect.move_ip(0, self.speedbomb)
@@ -250,18 +304,15 @@ shots = pygame.sprite.Group()
 bomb = pygame.sprite.Group()
 enemies = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
+lastalien = pygame.sprite.GroupSingle()
 
-enemy1 = Enemy(random.randint(0,1000),2,"right")
-enemy2 = Enemy(random.randint(0,1000),1,"left")
 player1 = player1()
-enemies.add(enemy1)
-enemies.add(enemy2)
 allupdate = pygame.sprite.RenderUpdates()
 all_sprites.add(player1)
-all_sprites.add(enemy1)
-all_sprites.add(enemy2)
 Shot.containers = shots, allupdate
 Bomb.containers = bomb, allupdate
+Enemy.containers = enemies, allupdate, lastalien
+Explosion.containers = allupdate
 clock = pygame.time.Clock()
 pygame.time.set_timer(pygame.USEREVENT, 1000)
 font = pygame.font.SysFont('Consolas', 30)
@@ -270,14 +321,20 @@ font_big = pygame.font.SysFont('Consolas', 100)
 font2 = pygame.font.SysFont('arimo', 40)
 counter, text = 60, '60'.rjust(3)
 run = True
-Shot.images = [load_image("gamematerial/shot.gif"),pygame.SRCALPHA]
+Shot.images = [load_image("gamematerial/shot.gif")]
 Bomb.images = [load_image("gamematerial/bomb.gif")]
+Enemy.images = [load_image("gamematerial/enemyrobotbee.gif")]
+img = load_image("gamematerial/explosion1.gif")
+Explosion.images = [img, pygame.transform.flip(img, 1, 1)]
+Mode = 1
 points = 0
+lastalienlist = []
 while run:
     surface.blit(font.render("Timer:" + text, True, white), (32, 48))
     surface.blit(font.render("Points:" + str(points), True, green), (32, 100))
     surface.blit(font2.render("Health: " + str(life), True, red), (850, 48))
     surface.blit(font2.render("Ammo: " + str(maxshots - len(shots)), True, orange), (850, 100))
+    surface.blit(font2.render("Mode: " + str(Mode), True, black), (32, 150))
     pygame.display.flip()
     clock.tick(60)
     allupdate.clear(surface, background)
@@ -292,47 +349,54 @@ while run:
         if e.type == pygame.KEYDOWN:
             if e.key == pygame.K_SPACE:
                 if not len(shots) == maxshots:
-                    Shot.update(Shot(player1.gunpos()))
-                    pygame.mixer.Sound('gamematerial/car_door.wav').play()
-
+                    if Mode == 1:
+                        Shot.update(Shot(player1.gunpos(),Mode))
+                        pygame.mixer.Sound('gamematerial/car_door.wav').play()
+                    else:
+                        if not len(shots) >= 1:
+                            for i in range(2,5):
+                                Shot.update(Shot(player1.gunpos(),i))
+                            pygame.mixer.Sound('gamematerial/car_door.wav').play()
+            if e.key == pygame.K_r:
+                Mode += 1
+                if Mode == 3:
+                    Mode = 1
+            if e.key == pygame.K_q:
+                    Enemy.update(Enemy(random.randint(0,1000),random.randint(1,3),"left"))
+                    lastalienlist.append(lastalien)
     surface.blit(background, (0,0))
     surface.blit(font.render("Timer:" + text, True, white), (32, 48))
     surface.blit(font2.render("Health: " + str(life), True, red), (850, 48))
     surface.blit(font.render("Points:" + str(points), True, green), (32, 100))
     surface.blit(font2.render("Ammo: " + str(maxshots - len(shots)), True, orange), (850, 100))
+    surface.blit(font2.render("Mode: " + str(Mode), True, black), (32, 150))
+
     for entity in all_sprites:
         surface.blit(entity.image, entity.rect)
         entity.move()
-    for allenemy in enemies:
-        if pygame.sprite.spritecollideany(allenemy,shots):
-            points += 1
-            allenemy.kill()
-            print(enemies)
-
-
-
-    for allenemy in enemies:
-        if pygame.sprite.collide_rect(player1, allenemy):
-            pygame.mixer.Sound('gamematerial/PygameTutorial_3_0/crash.wav').play()
-            life = life - 1
-            allenemy.kill()
-            if life == 0:
-                playerdeath()
+    for alien in pygame.sprite.groupcollide(enemies, shots, 1, 1).keys():
+        Explosion(alien)
+        points += 1
 
 
 
 
+    for alien in pygame.sprite.spritecollide(player1, enemies,1):
+        pygame.mixer.Sound('gamematerial/PygameTutorial_3_0/crash.wav').play()
+        life = life - 1
+        Explosion(alien)
+        if life == 0:
+            playerdeath()
 
-    enemy1.move()
-    enemy1.draw(surface)
-    enemy2.move()
-    enemy2.draw(surface)
+
+
+
+
     player1.move()
     player1.stand()
     player1.draw(surface)
-    if random.randint(1,40) == 1:
-        Bomb.update(Bomb())
-
+    if lastalien and random.randint(1,20) == 1:
+        Bomb.update(Bomb(lastalien.sprite))
         #pygame.mixer.Sound('gamematerial/bombthrow3.wav').play()
     dirty = allupdate.draw(surface)
     pygame.display.update(dirty)
